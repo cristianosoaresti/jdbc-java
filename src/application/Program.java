@@ -10,8 +10,8 @@ public class Program {
 
 		SellerDao sellerDao = FactoryDao.createSellerDao();
 
+		System.out.println("*** Testing find by ID ***");
 		Seller seller = sellerDao.findById(3);
-
 		System.out.println(seller);
 	}
 }
