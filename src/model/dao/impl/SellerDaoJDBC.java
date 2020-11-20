@@ -28,8 +28,7 @@ public class SellerDaoJDBC implements SellerDao {
 	public void insert(Seller seller) {
 		
 		PreparedStatement ps = null;
-		ResultSet rs = null;
-		
+
 		try {
 			ps = conn.prepareStatement(
 					"INSERT INTO seller (Name, Email, BirthDate, BaseSalary, DepartmentId) " + 
@@ -44,11 +43,12 @@ public class SellerDaoJDBC implements SellerDao {
 			int affectedRows = ps.executeUpdate();
 			
 			if(affectedRows > 0) {
-				rs = ps.getGeneratedKeys();
+				ResultSet rs = ps.getGeneratedKeys();
 				if (rs.next()) {
 					int id = rs.getInt(1);
 					seller.setId(id);
 				}
+				DB.closeResultSet(rs);
 			} else {
 				throw new DbException("Error during the insert command! No rows effected!");
 			}
@@ -57,7 +57,6 @@ public class SellerDaoJDBC implements SellerDao {
 			throw new DbException("Error during the insert command SQLState=" + e.getSQLState() + "\n Message error: " + e.getMessage());
 		} finally {
 			DB.closeStatement(ps);
-			DB.closeResultSet(rs);
 		}
 	}
 
@@ -79,10 +78,14 @@ public class SellerDaoJDBC implements SellerDao {
 			ps.setInt(5, seller.getDepartment().getId());
 			ps.setInt(6, seller.getId());
 			
-			ps.executeUpdate();
+			int affectedRows = ps.executeUpdate();
+			
+			if (affectedRows == 0) {
+				throw new DbException("Update not executed! The ID does not exists!");
+			}
 			
 		} catch (SQLException e) {
-			throw new DbException("Error during the insert command SQLState=" + e.getSQLState() + "\n Message error: " + e.getMessage());
+			throw new DbException("Error during the update command SQLState=" + e.getSQLState() + "\n Message error: " + e.getMessage());
 		} finally {
 			DB.closeStatement(ps);
 		}
@@ -90,8 +93,26 @@ public class SellerDaoJDBC implements SellerDao {
 
 	@Override
 	public void deleteById(Integer id) {
-		// TODO Auto-generated method stub
 
+		PreparedStatement ps = null;
+		
+		try {
+			ps = conn.prepareStatement(
+					"DELETE FROM seller " +
+					"WHERE Id = ? ");
+			
+			ps.setInt(1, id);
+			
+			int affectedRows = ps.executeUpdate();
+			
+			if (affectedRows == 0) {
+				throw new DbException("Delete not executed! The ID does not exists!");
+			}
+		} catch (SQLException e) {
+			throw new DbException("Error during the delete command SQLState=" + e.getSQLState() + "\n Message error: " + e.getMessage());
+		} finally {
+			DB.closeStatement(ps);
+		}
 	}
 
 	@Override
@@ -124,17 +145,6 @@ public class SellerDaoJDBC implements SellerDao {
 		}
 	}
 
-	private Seller intantiateSeller(ResultSet rs, Department department) throws SQLException {
-		Seller seller = new Seller(rs.getInt("Id"), rs.getString("Name"), rs.getString("Email"),
-				rs.getDate("BirthDate"), rs.getDouble("BaseSalary"), department);
-		return seller;
-	}
-
-	private Department instantiateDepartment(ResultSet rs) throws SQLException {
-		Department dep = new Department(rs.getInt("DepartmentId"), rs.getString("DepName"));
-		return dep;
-	}
-
 	@Override
 	public List<Seller> findAll() {
 		
@@ -144,7 +154,7 @@ public class SellerDaoJDBC implements SellerDao {
 		try {
 			ps = conn.prepareStatement(
 					"SELECT seller.*,department.Name as DepName FROM seller INNER JOIN department "
-							+ "ON seller.DepartmentId = department.Id ORDER BY Name");
+							+ "ON seller.DepartmentId = department.Id ORDER BY Id");
 
 			rs = ps.executeQuery();
 
@@ -218,5 +228,23 @@ public class SellerDaoJDBC implements SellerDao {
 			DB.closeStatement(ps);
 			DB.closeResultSet(rs);
 		}
+	}
+	
+	private Seller intantiateSeller(ResultSet rs, Department department) throws SQLException {
+		Seller seller = new Seller(
+				rs.getInt("Id"), 
+				rs.getString("Name"), 
+				rs.getString("Email"),
+				rs.getDate("BirthDate"), 
+				rs.getDouble("BaseSalary"), 
+				department);
+		return seller;
+	}
+
+	private Department instantiateDepartment(ResultSet rs) throws SQLException {
+		Department dep = new Department(
+				rs.getInt("DepartmentId"), 
+				rs.getString("DepName"));
+		return dep;
 	}
 }
