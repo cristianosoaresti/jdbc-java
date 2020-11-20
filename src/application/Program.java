@@ -31,9 +31,15 @@ public class Program {
 			System.out.println(obj);
 		}
 		
-		System.out.println("\n *** Testing the function of insert ***");
-		Seller newSeller = new Seller(null, "User Insert", "userinsert@teste.com", new Date(), 2333.50, department);
-		sellerDao.insert(newSeller);
-		System.out.println("New Insert! User Id " + newSeller.getId());
+		//System.out.println("\n *** Testing the function of insert ***");
+		//Seller newSeller = new Seller(null, "User Insert", "userinsert@teste.com", new Date(), 2333.50, department);
+		//sellerDao.insert(newSeller);
+		//System.out.println("New Insert! User Id " + newSeller.getId());
+		
+		System.out.println("\n *** Testing the function of update ***");
+		Seller selectSeller = sellerDao.findById(10);
+		selectSeller.setName("UpdatedName");
+		sellerDao.update(selectSeller);
+		System.out.println("Seller Updated!");
 	}
 }
