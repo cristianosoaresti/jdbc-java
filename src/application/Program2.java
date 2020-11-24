@@ -14,13 +14,17 @@ public class Program2 {
 		DepartmentDao deptDao = FactoryDao.createDepartmentDao();
 		//
 		System.out.println("*** Testing the function of findById ***");
-		Department department = deptDao.findById(1);
+		Department department = deptDao.findById(7);
 		System.out.println(department);
 		
-		System.out.println("\n*** Testing the function of insert ***");
-		Department newDepartment = new Department(null, "Technology");
-		deptDao.insert(newDepartment);
-		System.out.println("Department inserted. ID: " + newDepartment.getId());
+		System.out.println("\n *** Testing the function of update ***");
+		department.setName("Sales");
+		deptDao.update(department);
+		
+		//System.out.println("\n*** Testing the function of insert ***");
+		//Department newDepartment = new Department(null, "Technology");
+		//deptDao.insert(newDepartment);
+		//System.out.println("Department inserted. ID: " + newDepartment.getId());
 		
 		System.out.println("\n*** Testing the function findAll ***");
 		List<Department> deptmentList = new ArrayList<>(); 
